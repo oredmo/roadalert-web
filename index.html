@@ -90,13 +90,14 @@
     const data = await response.json();
 
     list.innerHTML = "";
-    
+
     if (Array.isArray(data.Documents)) {
   data.Documents.forEach(item => {
     console.log("Upload Item:", item); // 👈 log this
+    
+const fileName = item.fileName?.value || item.fileName || "Unknown file";
+const userName = item.userName?.value || item.userName || "Unknown user";
 
-    const fileName = JSON.stringify(item.fileName);
-    const userName = JSON.stringify(item.userName);
 
     const li = document.createElement("li");
     li.textContent = `${fileName} uploaded by ${userName}`;
