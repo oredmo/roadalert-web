@@ -90,20 +90,20 @@
     const data = await response.json();
 
     list.innerHTML = "";
-
+    
     if (Array.isArray(data.Documents)) {
-      data.Documents.forEach(item => {
-        const fileName = item.fileName?.value || item.fileName || "Unknown file";
-        const userName = item.userName?.value || item.userName || "Unknown user";
+  data.Documents.forEach(item => {
+    console.log("Upload Item:", item); // 👈 log this
 
-        const li = document.createElement("li");
-        li.textContent = `${fileName} uploaded by ${userName}`;
-        list.appendChild(li);
-      });
-    } else {
-      list.textContent = "❌ Unexpected format: no 'Documents' array found.";
-      console.log("Full response:", data);
-    }
+    const fileName = JSON.stringify(item.fileName);
+    const userName = JSON.stringify(item.userName);
+
+    const li = document.createElement("li");
+    li.textContent = `${fileName} uploaded by ${userName}`;
+    list.appendChild(li);
+  });
+}
+
   } catch (error) {
     list.textContent = "❌ Failed to load uploads: " + error.message;
   }
