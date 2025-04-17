@@ -81,8 +81,7 @@
       } catch (err) {
         document.getElementById("deleteStatus").textContent = "❌ Network error: " + err.message;
       }
-    }
-    async function getUploads() {
+    }async function getUploads() {
   const list = document.getElementById("uploadList");
   list.innerHTML = "Loading...";
 
@@ -94,8 +93,11 @@
 
     if (Array.isArray(data.Documents)) {
       data.Documents.forEach(item => {
+        const fileName = item.fileName?.value || item.fileName || "Unknown file";
+        const userName = item.userName?.value || item.userName || "Unknown user";
+
         const li = document.createElement("li");
-        li.textContent = `${item.fileName} uploaded by ${item.userName}`;
+        li.textContent = `${fileName} uploaded by ${userName}`;
         list.appendChild(li);
       });
     } else {
@@ -106,6 +108,7 @@
     list.textContent = "❌ Failed to load uploads: " + error.message;
   }
 }
+
 
   </script>
 
