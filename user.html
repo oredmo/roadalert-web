@@ -110,8 +110,7 @@
     async function submitEdit(id) {
       const newFileName = document.getElementById(`edit-filename-${id}`).value;
       const newUserName = document.getElementById(`edit-username-${id}`).value;
-
-      const updateUrl = "https://<your-raeditlogic-url>"; // 🔁 Replace this with your real Logic App URL
+      const updateUrl = "https://prod-09.northcentralus.logic.azure.com/workflows/abc123.../triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=...&sv=...&sig=...";
 
       const res = await fetch(updateUrl, {
         method: "POST",
