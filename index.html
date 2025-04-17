@@ -81,7 +81,8 @@
       } catch (err) {
         document.getElementById("deleteStatus").textContent = "❌ Network error: " + err.message;
       }
-    }async function getUploads() {
+    }
+    async function getUploads() {
   const list = document.getElementById("uploadList");
   list.innerHTML = "Loading...";
 
@@ -92,23 +93,25 @@
     list.innerHTML = "";
 
     if (Array.isArray(data.Documents)) {
-  data.Documents.forEach(item => {
-    console.log("Upload Item:", item); // 👈 log this
-    
-const fileName = item.fileName?.value || item.fileName || "Unknown file";
-const userName = item.userName?.value || item.userName || "Unknown user";
+      data.Documents.forEach(item => {
+        console.log("Upload Item:", item);
 
+        const fileName = item.fileName?.value || item.fileName || "Unknown file";
+        const userName = item.userName?.value || item.userName || "Unknown user";
 
-    const li = document.createElement("li");
-    li.textContent = `${fileName} uploaded by ${userName}`;
-    list.appendChild(li);
-  });
-}
-
+        const li = document.createElement("li");
+        li.textContent = `${fileName} uploaded by ${userName}`;
+        list.appendChild(li);
+      });
+    } else {
+      list.textContent = "❌ Unexpected format: no 'Documents' array found.";
+      console.log("Full response:", data);
+    }
   } catch (error) {
     list.textContent = "❌ Failed to load uploads: " + error.message;
   }
 }
+
 
 
   </script>
