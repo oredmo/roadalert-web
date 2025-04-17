@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RoadAlert Upload</title>
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 500px; margin: auto; }
+    input, button { display: block; width: 100%; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>RoadAlert Upload</h2>
+  <form id="uploadForm">
+    <label for="file">Choose File (image or video):</label>
+    <input type="file" id="file" name="File" required>
+
+    <label for="fileName">File Name:</label>
+    <input type="text" id="fileName" name="FileName" required>
+
+    <label for="userID">User ID:</label>
+    <input type="text" id="userID" name="userID" required>
+
+    <label for="userName">User Name:</label>
+    <input type="text" id="userName" name="userName" required>
+
+    <button type="submit">Upload</button>
+  </form>
+
+  <p id="response"></p>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const response = document.getElementById('response');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+
+      const endpoint = "https://prod-08.northcentralus.logic.azure.com:443/workflows/d324804e45064a91a2aea867f4ad9712/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=VnKo7U8gUkNfexwI9AknaxR_ie3OzvJUb9hwyGFmiUw";
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        response.textContent = "✅ Upload successful! Response ID: " + (data.id || "unknown");
+      } catch (err) {
+        response.textContent = "❌ Error: " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
