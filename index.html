@@ -4,45 +4,13 @@
   <meta charset="UTF-8">
   <title>RoadAlert Upload</title>
   <style>
-    body { font-family: Arial; padding: 20px; max-width: 500px; margin: auto; }
+    body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
     input, button { display: block; width: 100%; margin-top: 10px; }
+    ul { margin-top: 20px; padding: 0; list-style: none; }
+    li { padding: 8px; border-bottom: 1px solid #ccc; }
   </style>
 </head>
 <body>
-    <h3>Delete Report</h3>
-<input type="text" id="deleteUserID" placeholder="Enter User ID to Delete">
-<button onclick="deleteReport()">Delete</button>
-
-<p id="deleteStatus"></p>
-
-<script>
-  async function deleteReport() {
-    const userID = document.getElementById("deleteUserID").value.trim();
-
-    if (!userID) {
-      document.getElementById("deleteStatus").textContent = "❌ Please enter a User ID";
-      return;
-    }
-
-    const deleteUrl = `https://prod-18.northcentralus.logic.azure.com/workflows/f4da4429096e499394221930a7c5024d/triggers/When_a_HTTP_request_is_received/paths/invoke/rest/v1/assets/${encodeURIComponent(userID)}?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=LOVXjgNph1OxwqeDWdvc5dbYzofAISwtjzlm0opPMcI`;
-
-    try {
-      const res = await fetch(deleteUrl, {
-        method: "POST", // or DELETE if your Logic App expects DELETE
-      });
-
-      if (res.ok) {
-        document.getElementById("deleteStatus").textContent = `✅ Deleted asset for userID: ${userID}`;
-      } else {
-        const err = await res.text();
-        document.getElementById("deleteStatus").textContent = `❌ Error: ${res.status} ${err}`;
-      }
-    } catch (err) {
-      document.getElementById("deleteStatus").textContent = "❌ Network error: " + err.message;
-    }
-  }
-  
-</script>
 
   <h2>RoadAlert Upload</h2>
   <form id="uploadForm">
@@ -63,15 +31,22 @@
 
   <p id="response"></p>
 
+  <h3>Delete Report</h3>
+  <input type="text" id="deleteUserID" placeholder="Enter User ID to Delete">
+  <button onclick="deleteReport()">Delete</button>
+  <p id="deleteStatus"></p>
+
+  <h3>Show All Uploads</h3>
+  <button onclick="getUploads()">Load Uploads</button>
+  <ul id="uploadList"></ul>
+
   <script>
     const form = document.getElementById('uploadForm');
     const response = document.getElementById('response');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const formData = new FormData(form);
-
       const endpoint = "https://prod-08.northcentralus.logic.azure.com:443/workflows/d324804e45064a91a2aea867f4ad9712/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=VnKo7U8gUkNfexwI9AknaxR_ie3OzvJUb9hwyGFmiUw";
 
       try {
@@ -79,13 +54,59 @@
           method: 'POST',
           body: formData
         });
-
         const data = await res.json();
         response.textContent = "✅ Upload successful! Response ID: " + (data.id || "unknown");
       } catch (err) {
         response.textContent = "❌ Error: " + err.message;
       }
     });
+
+    async function deleteReport() {
+      const userID = document.getElementById("deleteUserID").value.trim();
+      if (!userID) {
+        document.getElementById("deleteStatus").textContent = "❌ Please enter a User ID";
+        return;
+      }
+
+      const deleteUrl = `https://prod-18.northcentralus.logic.azure.com/workflows/f4da4429096e499394221930a7c5024d/triggers/When_a_HTTP_request_is_received/paths/invoke/rest/v1/assets/${encodeURIComponent(userID)}?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=LOVXjgNph1OxwqeDWdvc5dbYzofAISwtjzlm0opPMcI`;
+
+      try {
+        const res = await fetch(deleteUrl, { method: "POST" });
+        if (res.ok) {
+          document.getElementById("deleteStatus").textContent = `✅ Deleted asset for userID: ${userID}`;
+        } else {
+          const err = await res.text();
+          document.getElementById("deleteStatus").textContent = `❌ Error: ${res.status} ${err}`;
+        }
+      } catch (err) {
+        document.getElementById("deleteStatus").textContent = "❌ Network error: " + err.message;
+      }
+    }
+
+    async function getUploads() {
+      const list = document.getElementById("uploadList");
+      list.innerHTML = "Loading...";
+
+      try {
+        const response = await fetch("https://prod-12.northcentralus.logic.azure.com:443/workflows/57fae2744382423bb53a7e2d2d51d512/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=2jlqDn9r7UT1qcfF0g3O-0pc2XftKwk1AYXvrm6LzRA");
+        const data = await response.json();
+
+        list.innerHTML = ""; // Clear loading
+
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            const li = document.createElement("li");
+            li.textContent = `${item.fileName} uploaded by ${item.userName}`;
+            list.appendChild(li);
+          });
+        } else {
+          list.textContent = "❌ Unexpected response format.";
+        }
+      } catch (error) {
+        list.textContent = "❌ Failed to load uploads: " + error.message;
+      }
+    }
   </script>
+
 </body>
 </html>
