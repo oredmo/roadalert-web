@@ -72,6 +72,7 @@
               <div id="edit-${id}" style="display:none; margin-top:10px;">
                 <label>New File Name: <input type="text" id="edit-filename-${id}" value="${fileName}"></label><br>
                 <label>New User Name: <input type="text" id="edit-username-${id}" value="${userName}"></label><br>
+                <input type="hidden" id="edit-userid-${id}" value="${userID}">
                 <button onclick="submitEdit('${id}')">Save</button>
               </div>
             `;
@@ -106,29 +107,33 @@
         alert("⚠️ Edit form not found for this upload.");
       }
     }
-
     async function submitEdit(id) {
-      const newFileName = document.getElementById(`edit-filename-${id}`).value;
-      const newUserName = document.getElementById(`edit-username-${id}`).value;
-      const updateUrl = "https://prod-06.northcentralus.logic.azure.com:443/workflows/4358246633584db9b4b8417e7d3cfa09/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=_I2UBoZOP2nXSFwHuqZ5AiCgnHDTWxtaLQETmzpN9Bk";
+  const newFileName = document.getElementById(`edit-filename-${id}`).value;
+  const newUserName = document.getElementById(`edit-username-${id}`).value;
+  const userID = document.getElementById(`edit-userid-${id}`).value;
 
-      const res = await fetch(updateUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          report_id: id,
-          fileName: newFileName,
-          userName: newUserName
-        })
-      });
+  const updateUrl = "https://prod-06.northcentralus.logic.azure.com:443/workflows/4358246633584db9b4b8417e7d3cfa09/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=_I2UBoZOP2nXSFwHuqZ5AiCgnHDTWxtaLQETmzpN9Bk";
 
-      if (res.ok) {
-        alert("✅ Upload updated!");
-        location.reload();
-      } else {
-        alert("❌ Failed to update.");
-      }
-    }
+  const res = await fetch(updateUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      report_id: id,
+      fileName: newFileName,
+      userName: newUserName,
+      userID: userID,
+      pk: id
+    })
+  });
+
+  if (res.ok) {
+    alert("✅ Upload updated!");
+    location.reload();
+  } else {
+    alert("❌ Failed to update.");
+  }
+}
+
   </script>
 
 </body>
