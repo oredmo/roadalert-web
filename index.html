@@ -82,6 +82,7 @@
         document.getElementById("deleteStatus").textContent = "❌ Network error: " + err.message;
       }
     }
+    
     async function getUploads() {
   const list = document.getElementById("uploadList");
   list.innerHTML = "Loading...";
@@ -96,8 +97,8 @@
       data.Documents.forEach(item => {
         console.log("Upload Item:", item);
 
-        const fileName = item.fileName?.value || item.fileName || "Unknown file";
-        const userName = item.userName?.value || item.userName || "Unknown user";
+        const fileName = item.fileName?.$content ? atob(item.fileName.$content) : "Unknown file";
+        const userName = item.userName?.$content ? atob(item.userName.$content) : "Unknown user";
 
         const li = document.createElement("li");
         li.textContent = `${fileName} uploaded by ${userName}`;
