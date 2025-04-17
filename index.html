@@ -81,8 +81,7 @@
       } catch (err) {
         document.getElementById("deleteStatus").textContent = "❌ Network error: " + err.message;
       }
-    }
-    async function getUploads() {
+    }async function getUploads() {
   const list = document.getElementById("uploadList");
   list.innerHTML = "Loading...";
 
@@ -94,16 +93,22 @@
 
     if (Array.isArray(data.Documents)) {
       data.Documents.forEach(item => {
-        console.log("Upload Item:", item);
+        // Safely decode string fields
+        const fileName = item.fileName || "Unknown file";
+        const userName = item.userName || "Unknown user";
+        const userID = item.userID || "Unknown ID";
+        const filePath = item.filePath || "";
 
-        const fileNameEncoded = item.fileName?.["$content"];
-        const userNameEncoded = item.userName?.["$content"];
+        // Derive full Blob URL
+        const fileNamePart = filePath.split("/").pop();
+        const blobUrl = `https://roadalertblobstorage.blob.core.windows.net/rablobimagecontainer/${fileNamePart}`;
 
-        const fileName = fileNameEncoded ? atob(fileNameEncoded) : "Unknown file";
-        const userName = userNameEncoded ? atob(userNameEncoded) : "Unknown user";
-
+        // Create list item with image
         const li = document.createElement("li");
-        li.textContent = `${fileName} uploaded by ${userName}`;
+        li.innerHTML = `
+          <strong>${fileName}</strong> uploaded by <em>${userName}</em> (User ID: ${userID})<br>
+          <img src="${blobUrl}" alt="${fileName}" style="max-width: 100%; margin-top: 8px;" />
+        `;
         list.appendChild(li);
       });
     } else {
