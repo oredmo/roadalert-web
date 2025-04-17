@@ -82,30 +82,32 @@
         document.getElementById("deleteStatus").textContent = "❌ Network error: " + err.message;
       }
     }
-
+    
     async function getUploads() {
-      const list = document.getElementById("uploadList");
-      list.innerHTML = "Loading...";
+  const list = document.getElementById("uploadList");
+  list.innerHTML = "Loading...";
 
-      try {
-        const response = await fetch("https://prod-12.northcentralus.logic.azure.com:443/workflows/57fae2744382423bb53a7e2d2d51d512/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=2jlqDn9r7UT1qcfF0g3O-0pc2XftKwk1AYXvrm6LzRA");
-        const data = await response.json();
+  try {
+    const response = await fetch("https://prod-12.northcentralus.logic.azure.com:443/workflows/57fae2744382423bb53a7e2d2d51d512/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=2jlqDn9r7UT1qcfF0g3O-0pc2XftKwk1AYXvrm6LzRA");
+    const data = await response.json();
 
-        list.innerHTML = ""; // Clear loading
+    console.log("Full response:", data); // 👈 Add this
 
-        if (Array.isArray(data)) {
-          data.forEach(item => {
-            const li = document.createElement("li");
-            li.textContent = `${item.fileName} uploaded by ${item.userName}`;
-            list.appendChild(li);
-          });
-        } else {
-          list.textContent = "❌ Unexpected response format.";
-        }
-      } catch (error) {
-        list.textContent = "❌ Failed to load uploads: " + error.message;
-      }
+    list.innerHTML = "";
+
+    if (Array.isArray(data)) {
+      data.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = `${item.fileName} uploaded by ${item.userName}`;
+        list.appendChild(li);
+      });
+    } else {
+      list.textContent = "❌ Unexpected response format.";
     }
+  } catch (error) {
+    list.textContent = "❌ Failed to load uploads: " + error.message;
+  }
+}
   </script>
 
 </body>
