@@ -82,7 +82,6 @@
         document.getElementById("deleteStatus").textContent = "❌ Network error: " + err.message;
       }
     }
-    
     async function getUploads() {
   const list = document.getElementById("uploadList");
   list.innerHTML = "Loading...";
@@ -97,8 +96,11 @@
       data.Documents.forEach(item => {
         console.log("Upload Item:", item);
 
-        const fileName = item.fileName?.$content ? atob(item.fileName.$content) : "Unknown file";
-        const userName = item.userName?.$content ? atob(item.userName.$content) : "Unknown user";
+        const fileNameEncoded = item.fileName?.["$content"];
+        const userNameEncoded = item.userName?.["$content"];
+
+        const fileName = fileNameEncoded ? atob(fileNameEncoded) : "Unknown file";
+        const userName = userNameEncoded ? atob(userNameEncoded) : "Unknown user";
 
         const li = document.createElement("li");
         li.textContent = `${fileName} uploaded by ${userName}`;
@@ -112,6 +114,7 @@
     list.textContent = "❌ Failed to load uploads: " + error.message;
   }
 }
+
 
 
 
