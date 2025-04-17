@@ -9,6 +9,41 @@
   </style>
 </head>
 <body>
+    <h3>Delete Report</h3>
+<input type="text" id="deleteUserID" placeholder="Enter User ID to Delete">
+<button onclick="deleteReport()">Delete</button>
+
+<p id="deleteStatus"></p>
+
+<script>
+  async function deleteReport() {
+    const userID = document.getElementById("deleteUserID").value.trim();
+
+    if (!userID) {
+      document.getElementById("deleteStatus").textContent = "❌ Please enter a User ID";
+      return;
+    }
+
+    const deleteUrl = `https://prod-18.northcentralus.logic.azure.com/workflows/f4da4429096e499394221930a7c5024d/triggers/When_a_HTTP_request_is_received/paths/invoke/rest/v1/assets/${encodeURIComponent(userID)}?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=LOVXjgNph1OxwqeDWdvc5dbYzofAISwtjzlm0opPMcI`;
+
+    try {
+      const res = await fetch(deleteUrl, {
+        method: "POST", // or DELETE if your Logic App expects DELETE
+      });
+
+      if (res.ok) {
+        document.getElementById("deleteStatus").textContent = `✅ Deleted asset for userID: ${userID}`;
+      } else {
+        const err = await res.text();
+        document.getElementById("deleteStatus").textContent = `❌ Error: ${res.status} ${err}`;
+      }
+    } catch (err) {
+      document.getElementById("deleteStatus").textContent = "❌ Network error: " + err.message;
+    }
+  }
+  
+</script>
+
   <h2>RoadAlert Upload</h2>
   <form id="uploadForm">
     <label for="file">Choose File (image or video):</label>
