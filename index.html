@@ -5,7 +5,6 @@
   <title>RoadAlert Upload</title>
   <link rel="stylesheet" href="style.css">
 
-  <!-- ✅ Load latest Application Insights SDK (v3) -->
   <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
       c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -13,13 +12,11 @@
       y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window,document,"appInsights","script");
 
-    // ✅ Initialize with your connection string or instrumentation key
     appInsights('config', {
       connectionString: "InstrumentationKey=4c317b61-5741-4965-a81a-415ce50726fd",
       enableAutoRouteTracking: true
     });
 
-    // ✅ Track page load
     appInsights('trackPageView');
   </script>
 </head>
@@ -69,7 +66,6 @@
 
         const data = await res.json();
 
-        // ✅ Track upload success
         appInsights('trackEvent', {
           name: "UploadSuccess",
           properties: {
@@ -78,16 +74,15 @@
           }
         });
 
-        response.textContent = "✅ Upload successful! Response ID: " + (data.id || "unknown");
+        response.textContent = "Upload successful! Response ID: " + (data.id || "unknown");
 
       } catch (err) {
-        // ❌ Track upload failure
         appInsights('trackException', {
           exception: new Error(err.message),
           properties: { action: "UploadFormSubmit" }
         });
 
-        response.textContent = "❌ Error: " + err.message;
+        response.textContent = "Error: " + err.message;
       }
     });
   </script>
