@@ -6,25 +6,29 @@
   <link rel="stylesheet" href="style.css">
 
   <script type="text/javascript">
-    (function (c, l, a, r, i, t, y) {
-      c[a] = c[a] || function () {
-        (c[a].q = c[a].q || []).push(arguments);
-      };
-      t = l.createElement(r); t.async = 1; t.src = "https://az416426.vo.msecnd.net/scripts/b/ai.3.min.js";
-      y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
-    })(window, document, "appInsights", "script");
-
-    appInsights("config", {
-      connectionString: "InstrumentationKey=4c317b61-5741-4965-a81a-415ce50726fd",
-      enableAutoRouteTracking: true
+    var appInsights = window.appInsights || function (config) {
+      function r(config) { t[config] = function () { var i = arguments; t.queue.push(function () { t[config].apply(t, i) }) } }
+      var t = { config: config }, u = document, e = window, o = "script", s = u.createElement(o), i, f;
+      s.src = config.url || "https://az416426.vo.msecnd.net/scripts/a/ai.0.js";
+      u.getElementsByTagName(o)[0].parentNode.appendChild(s);
+      t.queue = [];
+      for (i = ["Event", "Exception", "Metric", "PageView", "Trace", "Dependency"]; i.length;) r("track" + i.pop());
+      r("setAuthenticatedUserContext"); r("clearAuthenticatedUserContext");
+      config.disableExceptionTracking || (i = "onerror", r("_" + i), f = e[i], e[i] = function (config, r, u, e, o) {
+        var s = f && f(config, r, u, e, o);
+        s !== !0 && t["_" + i](config, r, u, e, o);
+        return s;
+      });
+      return t;
+    }({
+      instrumentationKey: "4c317b61-5741-4965-a81a-415ce50726fd" 
     });
-
-    appInsights("trackPageView");
+    window.appInsights = appInsights;
+    appInsights.trackPageView();
   </script>
 </head>
 
 <body>
-
   <h1>User Uploads</h1>
   <ul id="uploadList">Loading user uploads...</ul>
   <a href="index.html">⬅ Back to Upload Page</a>
@@ -45,12 +49,6 @@
       try {
         const res = await fetch(readUrl);
         const data = await res.json();
-
-        appInsights("trackEvent", {
-          name: "UserUploadsFetchSuccess",
-          properties: { userID: userID, count: data.Documents?.length || 0 }
-        });
-
         uploadList.innerHTML = "";
 
         const userDocs = (data.Documents || []).filter(d => d.userID === userID);
@@ -64,10 +62,10 @@
           const blobUrl = `https://roadalertblobstorage.blob.core.windows.net/rablobimagecontainer/${blob}`;
           const li = document.createElement("li");
           li.innerHTML = `
-            <strong>${doc.fileName}</strong> by <em>${doc.userName}</em><br>
+            <strong>${doc.fileName}</strong> by <em>${doc.userName}</em> (User ID: ${userID})<br>
             <img src="${blobUrl}" alt="${doc.fileName}" /><br><br>
             <button onclick="deleteUpload('${doc.id}', '${doc.filePath}')">🗑️ Delete</button>
-            <button onclick="toggleEdit('${doc.id}')">✏️ Edit</button>
+            <button onclick="toggleEdit('${doc.id}')">Edit</button>
             <div id="edit-${doc.id}" style="display:none; margin-top:10px;">
               <input type="text" id="name-${doc.id}" value="${doc.fileName}" placeholder="New File Name"><br>
               <input type="text" id="user-${doc.id}" value="${doc.userName}" placeholder="New User Name"><br>
@@ -76,11 +74,9 @@
           `;
           uploadList.appendChild(li);
         });
+
       } catch (err) {
-        appInsights("trackException", {
-          exception: new Error(err.message),
-          properties: { context: "UserUploadsFetch" }
-        });
+        appInsights.trackException({ exception: new Error(err.message), properties: { action: "getUploads" } });
         uploadList.textContent = "Failed to load uploads: " + err.message;
       }
     }
@@ -90,31 +86,36 @@
     }
 
     async function deleteUpload(id, filePath) {
+      console.log("Deleting ID:", id);
+      const pk = id;
+      const payload = { id, pk, filePath };
+
+      appInsights.trackEvent({ name: "DeleteAttempt", properties: payload });
+
       try {
         const res = await fetch(deleteUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id, pk: id, filePath })
+          body: JSON.stringify(payload)
         });
 
         const msg = await res.text();
-        appInsights("trackEvent", {
-          name: res.ok ? "DeleteSuccess" : "DeleteFailure",
-          properties: { id, status: res.status }
-        });
+        console.log("Delete response:", msg);
 
         if (res.ok) {
+          appInsights.trackEvent({ name: "DeleteSuccess", properties: { id } });
           alert("Deleted!");
           location.reload();
         } else {
+          appInsights.trackException({
+            exception: new Error("Delete failed"),
+            properties: { response: msg, id }
+          });
           alert("Delete failed. Check console.");
-          console.error(msg);
         }
       } catch (err) {
-        appInsights("trackException", {
-          exception: new Error(err.message),
-          properties: { context: "DeleteUpload" }
-        });
+        appInsights.trackException({ exception: err, properties: { action: "deleteUpload", id } });
+        console.error("Delete error:", err);
       }
     }
 
@@ -132,6 +133,8 @@
         pk: id
       };
 
+      appInsights.trackEvent({ name: "EditAttempt", properties: payload });
+
       try {
         const res = await fetch(updateUrl, {
           method: "POST",
@@ -140,23 +143,22 @@
         });
 
         const result = await res.text();
-        appInsights("trackEvent", {
-          name: res.ok ? "EditSuccess" : "EditFailure",
-          properties: { fileName, userName, status: res.status }
-        });
+        console.log("Edit response:", result);
 
         if (res.ok) {
+          appInsights.trackEvent({ name: "EditSuccess", properties: { id } });
           alert("Edit successful!");
           location.reload();
         } else {
-          alert("Edit failed.");
-          console.error(result);
+          appInsights.trackException({
+            exception: new Error("Edit failed"),
+            properties: { response: result, id }
+          });
+          alert("Edit failed. Check console.");
         }
       } catch (err) {
-        appInsights("trackException", {
-          exception: new Error(err.message),
-          properties: { context: "SubmitEdit" }
-        });
+        appInsights.trackException({ exception: err, properties: { action: "submitEdit", id } });
+        console.error("Edit error:", err);
       }
     }
   </script>
