@@ -109,6 +109,7 @@
         alert("⚠️ Edit form not found for this upload.");
       }
     }async function submitEdit(id) {
+        console.log("Editing document ID:", id);
   const newFileName = document.getElementById(`edit-filename-${id}`).value;
   const newUserName = document.getElementById(`edit-username-${id}`).value;
   const userID = document.getElementById(`edit-userid-${id}`).value;
