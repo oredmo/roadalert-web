@@ -8,9 +8,9 @@
 </head>
 <body>
   <nav>
-    <a href="index.html">🏠 Home</a>
-    <a href="explore.html">🧭 Explore</a>
-    <a href="user.html?userID=1">👤 My Uploads</a> <!-- Replace 1 with dynamic or test userID -->
+    <a href="index.html">Home</a>
+    <a href="explore.html">Explore</a>
+    <a href="user.html?userID=1">My Uploads</a> <!-- Replace 1 with dynamic or test userID -->
   </nav>  
   <h2>RoadAlert Upload</h2>
   <form id="uploadForm">
@@ -46,9 +46,9 @@
           body: formData
         });
         const data = await res.json();
-        response.textContent = "✅ Upload successful! Response ID: " + (data.id || "unknown");
+        response.textContent = "Upload successful! Response ID: " + (data.id || "unknown");
       } catch (err) {
-        response.textContent = "❌ Error: " + err.message;
+        response.textContent = "Error: " + err.message;
       }
     });
   </script>
