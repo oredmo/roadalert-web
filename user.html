@@ -65,8 +65,9 @@
             li.innerHTML = `
               <strong>${fileName}</strong> uploaded by <em>${userName}</em> (User ID: ${userID})<br>
               <img src="${blobUrl}" alt="${fileName}" /><br><br>
+            
+              <button onclick="deleteUpload(event, '${id}')">🗑️ Delete</button>
 
-              <button onclick="deleteUpload('${userID}')">🗑️ Delete</button>
               <button onclick="showEditForm('${id}', '${fileName}', '${userName}')">✏️ Edit</button>
 
               <div id="edit-${id}" style="display:none; margin-top:10px;">
@@ -96,10 +97,29 @@
       document.getElementById("uploadList").textContent = "❌ No user ID specified in URL.";
     }
 
-    function deleteUpload(userID) {
-      const deleteUrl = `https://prod-18.northcentralus.logic.azure.com/workflows/f4da4429096e499394221930a7c5024d/triggers/When_a_HTTP_request_is_received/paths/invoke/rest/v1/assets/${encodeURIComponent(userID)}?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=LOVXjgNph1OxwqeDWdvc5dbYzofAISwtjzlm0opPMcI`;
-      fetch(deleteUrl, { method: "POST" }).then(() => location.reload());
+    async function deleteUpload(event, docId) {
+  event.preventDefault(); // prevent reload on error
+
+  console.log("🧨 Attempting to delete document ID:", docId);
+
+  const deleteUrl = `https://prod-18.northcentralus.logic.azure.com/workflows/f4da4429096e499394221930a7c5024d/triggers/When_a_HTTP_request_is_received/paths/invoke/rest/v1/assets/${encodeURIComponent(docId)}?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=LOVXjgNph1OxwqeDWdvc5dbYzofAISwtjzlm0opPMcI`;
+
+  try {
+    const res = await fetch(deleteUrl, { method: "POST" });
+    if (res.ok) {
+      alert("✅ Document deleted.");
+      location.reload();
+    } else {
+      const errText = await res.text();
+      console.error("❌ Delete failed:", res.status, errText);
+      alert(`❌ Delete failed with status ${res.status}. See console for details.`);
     }
+  } catch (error) {
+    console.error("❌ Network error:", error);
+    alert("❌ Network error: " + error.message);
+  }
+}
+
 
     function showEditForm(id, fileName, userName) {
       const form = document.getElementById(`edit-${id}`);
