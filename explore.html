@@ -40,11 +40,11 @@
             list.appendChild(li);
           });
         } else {
-          list.textContent = "❌ Unexpected format: no 'Documents' array found.";
+          list.textContent = "Unexpected format: no 'Documents' array found.";
           console.log("Full response:", data);
         }
       } catch (error) {
-        list.textContent = "❌ Failed to load uploads: " + error.message;
+        list.textContent = "Failed to load uploads: " + error.message;
       }
     }
 
