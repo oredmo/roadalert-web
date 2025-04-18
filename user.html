@@ -68,13 +68,15 @@
 
               <button onclick="deleteUpload('${userID}')">🗑️ Delete</button>
               <button onclick="showEditForm('${id}', '${fileName}', '${userName}')">✏️ Edit</button>
+<div id="edit-${id}" style="display:none; margin-top:10px;">
+  <label>New File Name: <input type="text" id="edit-filename-${id}" value="${fileName}"></label><br>
+  <label>New User Name: <input type="text" id="edit-username-${id}" value="${userName}"></label><br>
+  <input type="hidden" id="edit-userid-${id}" value="${userID}">
+  <input type="hidden" id="edit-filepath-${id}" value="${filePath}">
+  <input type="hidden" id="edit-filelocator-${id}" value="${item.fileLocator}">
+  <button onclick="submitEdit('${id}')">Save</button>
+</div>
 
-              <div id="edit-${id}" style="display:none; margin-top:10px;">
-                <label>New File Name: <input type="text" id="edit-filename-${id}" value="${fileName}"></label><br>
-                <label>New User Name: <input type="text" id="edit-username-${id}" value="${userName}"></label><br>
-                <input type="hidden" id="edit-userid-${id}" value="${userID}">
-                <button onclick="submitEdit('${id}')">Save</button>
-              </div>
             `;
             list.appendChild(li);
           });
@@ -106,11 +108,12 @@
       } else {
         alert("⚠️ Edit form not found for this upload.");
       }
-    }
-    async function submitEdit(id) {
+    }async function submitEdit(id) {
   const newFileName = document.getElementById(`edit-filename-${id}`).value;
   const newUserName = document.getElementById(`edit-username-${id}`).value;
   const userID = document.getElementById(`edit-userid-${id}`).value;
+  const filePath = document.getElementById(`edit-filepath-${id}`).value;
+  const fileLocator = document.getElementById(`edit-filelocator-${id}`).value;
 
   const updateUrl = "https://prod-06.northcentralus.logic.azure.com:443/workflows/4358246633584db9b4b8417e7d3cfa09/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=_I2UBoZOP2nXSFwHuqZ5AiCgnHDTWxtaLQETmzpN9Bk";
 
@@ -122,6 +125,8 @@
       fileName: newFileName,
       userName: newUserName,
       userID: userID,
+      filePath: filePath,
+      fileLocator: fileLocator,
       pk: id
     })
   });
