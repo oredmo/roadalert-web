@@ -4,7 +4,25 @@
   <meta charset="UTF-8">
   <title>User Details | RoadAlert</title>
   <link rel="stylesheet" href="style.css">
+
+  <script type="text/javascript">
+    (function (c, l, a, r, i, t, y) {
+      c[a] = c[a] || function () {
+        (c[a].q = c[a].q || []).push(arguments);
+      };
+      t = l.createElement(r); t.async = 1; t.src = "https://az416426.vo.msecnd.net/scripts/b/ai.3.min.js";
+      y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+    })(window, document, "appInsights", "script");
+
+    appInsights("config", {
+      connectionString: "InstrumentationKey=4c317b61-5741-4965-a81a-415ce50726fd",
+      enableAutoRouteTracking: true
+    });
+
+    appInsights("trackPageView");
+  </script>
 </head>
+
 <body>
 
   <h1>User Uploads</h1>
@@ -12,9 +30,9 @@
   <a href="index.html">⬅ Back to Upload Page</a>
 
   <script>
-    const readUrl = "https://prod-12.northcentralus.logic.azure.com:443/workflows/57fae2744382423bb53a7e2d2d51d512/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=2jlqDn9r7UT1qcfF0g3O-0pc2XftKwk1AYXvrm6LzRA";
-    const updateUrl = "https://prod-04.northcentralus.logic.azure.com:443/workflows/c805fbce7e794f258d2e914461e36946/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=4f6Epw3tVHh2_qx6A6hBW6MGEYKWEYhrz7qzpVSV9Ec";
-    const deleteUrl = "https://prod-18.northcentralus.logic.azure.com:443/workflows/f4da4429096e499394221930a7c5024d/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=LOVXjgNph1OxwqeDWdvc5dbYzofAISwtjzlm0opPMcI";
+    const readUrl = "https://prod-12.northcentralus.logic.azure.com/...";
+    const updateUrl = "https://prod-04.northcentralus.logic.azure.com/...";
+    const deleteUrl = "https://prod-18.northcentralus.logic.azure.com/...";
 
     const userID = new URLSearchParams(window.location.search).get("userID");
     const uploadList = document.getElementById("uploadList");
@@ -27,6 +45,12 @@
       try {
         const res = await fetch(readUrl);
         const data = await res.json();
+
+        appInsights("trackEvent", {
+          name: "UserUploadsFetchSuccess",
+          properties: { userID: userID, count: data.Documents?.length || 0 }
+        });
+
         uploadList.innerHTML = "";
 
         const userDocs = (data.Documents || []).filter(d => d.userID === userID);
@@ -40,12 +64,10 @@
           const blobUrl = `https://roadalertblobstorage.blob.core.windows.net/rablobimagecontainer/${blob}`;
           const li = document.createElement("li");
           li.innerHTML = `
-            <strong>${doc.fileName}</strong> by <em>${doc.userName}</em> (User ID: ${userID})<br>
+            <strong>${doc.fileName}</strong> by <em>${doc.userName}</em><br>
             <img src="${blobUrl}" alt="${doc.fileName}" /><br><br>
-
             <button onclick="deleteUpload('${doc.id}', '${doc.filePath}')">🗑️ Delete</button>
-            <button onclick="toggleEdit('${doc.id}')">Edit</button>
-
+            <button onclick="toggleEdit('${doc.id}')">✏️ Edit</button>
             <div id="edit-${doc.id}" style="display:none; margin-top:10px;">
               <input type="text" id="name-${doc.id}" value="${doc.fileName}" placeholder="New File Name"><br>
               <input type="text" id="user-${doc.id}" value="${doc.userName}" placeholder="New User Name"><br>
@@ -54,8 +76,11 @@
           `;
           uploadList.appendChild(li);
         });
-
       } catch (err) {
+        appInsights("trackException", {
+          exception: new Error(err.message),
+          properties: { context: "UserUploadsFetch" }
+        });
         uploadList.textContent = "Failed to load uploads: " + err.message;
       }
     }
@@ -65,30 +90,31 @@
     }
 
     async function deleteUpload(id, filePath) {
-      console.log("Deleting ID:", id);
-      console.log("filePath:", filePath);
-      pk = id;
-      console.log("pk:", pk);
-      PassedJson = JSON.stringify({ id, pk, filePath });
-      console.log("total passed JSON: ", PassedJson);
-      
       try {
         const res = await fetch(deleteUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id, pk, filePath })
+          body: JSON.stringify({ id, pk: id, filePath })
         });
 
         const msg = await res.text();
-        console.log("Delete response:", msg);
+        appInsights("trackEvent", {
+          name: res.ok ? "DeleteSuccess" : "DeleteFailure",
+          properties: { id, status: res.status }
+        });
+
         if (res.ok) {
           alert("Deleted!");
           location.reload();
         } else {
           alert("Delete failed. Check console.");
+          console.error(msg);
         }
       } catch (err) {
-        console.error("Delete error:", err);
+        appInsights("trackException", {
+          exception: new Error(err.message),
+          properties: { context: "DeleteUpload" }
+        });
       }
     }
 
@@ -106,8 +132,6 @@
         pk: id
       };
 
-      console.log("Editing with:", payload);
-
       try {
         const res = await fetch(updateUrl, {
           method: "POST",
@@ -116,16 +140,23 @@
         });
 
         const result = await res.text();
-        console.log("🧾 Edit response:", result);
+        appInsights("trackEvent", {
+          name: res.ok ? "EditSuccess" : "EditFailure",
+          properties: { fileName, userName, status: res.status }
+        });
 
         if (res.ok) {
           alert("Edit successful!");
           location.reload();
         } else {
-          alert("Edit failed. Check console.");
+          alert("Edit failed.");
+          console.error(result);
         }
       } catch (err) {
-        console.error("Edit error:", err);
+        appInsights("trackException", {
+          exception: new Error(err.message),
+          properties: { context: "SubmitEdit" }
+        });
       }
     }
   </script>
