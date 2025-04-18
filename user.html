@@ -73,13 +73,17 @@
 
     async function deleteUpload(id, filePath) {
       console.log("🧨 Deleting ID:", id);
-      console.log("🧨 Deleting filePath:", filePath);
+      console.log("🧨 filePath:", filePath);
+      pk = id;
+      console.log("🧨 pk:", pk);
+      PassedJson = JSON.stringify({ id, pk, filePath });
+      console.log("total passed JSON: ", PassedJson);
       
       try {
         const res = await fetch(deleteUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id, pk: id, filePath })
+          body: JSON.stringify({ id, pk, filePath })
         });
 
         const msg = await res.text();
