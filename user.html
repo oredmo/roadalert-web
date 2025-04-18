@@ -96,7 +96,7 @@
     } else {
       document.getElementById("uploadList").textContent = "❌ No user ID specified in URL.";
     }
-
+    
     async function deleteUpload(event, docId) {
   event.preventDefault(); // prevent reload on error
 
@@ -119,6 +119,7 @@
     alert("❌ Network error: " + error.message);
   }
 }
+
 
 
     function showEditForm(id, fileName, userName) {
