@@ -79,6 +79,9 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id, pk: id, filePath })
         });
+        console.log("Updated URL: ", updateUrl);
+        console.log("User ID" , userID);
+
         const msg = await res.text();
         console.log("🧾 Delete response:", msg);
         if (res.ok) {
