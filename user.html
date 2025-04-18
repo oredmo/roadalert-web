@@ -20,7 +20,7 @@
     const uploadList = document.getElementById("uploadList");
 
     if (userID) getUploads(userID);
-    else uploadList.textContent = "❌ No user ID specified in URL.";
+    else uploadList.textContent = "No user ID specified in URL.";
 
     async function getUploads(userID) {
       uploadList.innerHTML = `Loading uploads for user ${userID}...`;
@@ -44,7 +44,7 @@
             <img src="${blobUrl}" alt="${doc.fileName}" /><br><br>
 
             <button onclick="deleteUpload('${doc.id}', '${doc.filePath}')">🗑️ Delete</button>
-            <button onclick="toggleEdit('${doc.id}')">✏️ Edit</button>
+            <button onclick="toggleEdit('${doc.id}')">Edit</button>
 
             <div id="edit-${doc.id}" style="display:none; margin-top:10px;">
               <input type="text" id="name-${doc.id}" value="${doc.fileName}" placeholder="New File Name"><br>
@@ -56,7 +56,7 @@
         });
 
       } catch (err) {
-        uploadList.textContent = "❌ Failed to load uploads: " + err.message;
+        uploadList.textContent = "Failed to load uploads: " + err.message;
       }
     }
 
@@ -65,10 +65,10 @@
     }
 
     async function deleteUpload(id, filePath) {
-      console.log("🧨 Deleting ID:", id);
-      console.log("🧨 filePath:", filePath);
+      console.log("Deleting ID:", id);
+      console.log("filePath:", filePath);
       pk = id;
-      console.log("🧨 pk:", pk);
+      console.log("pk:", pk);
       PassedJson = JSON.stringify({ id, pk, filePath });
       console.log("total passed JSON: ", PassedJson);
       
@@ -80,15 +80,15 @@
         });
 
         const msg = await res.text();
-        console.log("🧾 Delete response:", msg);
+        console.log("Delete response:", msg);
         if (res.ok) {
-          alert("✅ Deleted!");
+          alert("Deleted!");
           location.reload();
         } else {
-          alert("❌ Delete failed. Check console.");
+          alert("Delete failed. Check console.");
         }
       } catch (err) {
-        console.error("❌ Delete error:", err);
+        console.error("Delete error:", err);
       }
     }
 
@@ -106,7 +106,7 @@
         pk: id
       };
 
-      console.log("✏️ Editing with:", payload);
+      console.log("Editing with:", payload);
 
       try {
         const res = await fetch(updateUrl, {
@@ -119,13 +119,13 @@
         console.log("🧾 Edit response:", result);
 
         if (res.ok) {
-          alert("✅ Edit successful!");
+          alert("Edit successful!");
           location.reload();
         } else {
-          alert("❌ Edit failed. Check console.");
+          alert("Edit failed. Check console.");
         }
       } catch (err) {
-        console.error("❌ Edit error:", err);
+        console.error("Edit error:", err);
       }
     }
   </script>
