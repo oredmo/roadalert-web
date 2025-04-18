@@ -65,8 +65,8 @@
             li.innerHTML = `
               <strong>${fileName}</strong> uploaded by <em>${userName}</em> (User ID: ${userID})<br>
               <img src="${blobUrl}" alt="${fileName}" /><br><br>
-            
-              <button onclick="deleteUpload(event, '${id}')">🗑️ Delete</button>
+
+            <button onclick="deleteUpload(event, '${id}', '${filePath}')">🗑️ Delete</button>
 
               <button onclick="showEditForm('${id}', '${fileName}', '${userName}')">✏️ Edit</button>
 
@@ -96,31 +96,47 @@
     } else {
       document.getElementById("uploadList").textContent = "❌ No user ID specified in URL.";
     }
+    async function deleteUpload(event, docId, filePath) {
+  event.preventDefault(); // Prevent page reload
 
-    async function deleteUpload(event, docId) {
-  event.preventDefault(); // prevent reload on error
+  console.log("🧨 Attempting to delete...");
+  console.log("📄 Document ID:", docId);
+  console.log("📂 File Path:", filePath);
 
-  console.log("🧨 Attempting to delete document ID:", docId);
+  // Construct the payload
+  const payload = {
+    id: docId,
+    pk: docId,
+    filePath: filePath
+  };
 
-  const deleteUrl = `https://prod-18.northcentralus.logic.azure.com/workflows/f4da4429096e499394221930a7c5024d/triggers/When_a_HTTP_request_is_received/paths/invoke/rest/v1/assets/%7BuserID%7D?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=LOVXjgNph1OxwqeDWdvc5dbYzofAISwtjzlm0opPMcI`;
+  console.log("📦 Request Payload:", payload);
+
+  // Logic App endpoint
+  const deleteUrl = "https://<your-delete-logic-app-url>";
 
   try {
-    const res = await fetch(deleteUrl, { method: "POST" });
+    const res = await fetch(deleteUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const resText = await res.text();
+
     if (res.ok) {
-      alert("✅ Document deleted.");
+      console.log("✅ Success response:", resText);
+      alert("✅ Deleted successfully!");
       location.reload();
     } else {
-      const errText = await res.text();
-      console.error("❌ Delete failed:", res.status, errText);
-      alert(`❌ Delete failed with status ${res.status}. See console for details.`);
+      console.error("❌ Delete failed:", res.status, resText);
+      alert(`❌ Delete failed with status ${res.status}. Check console for details.`);
     }
-  } catch (error) {
-    console.error("❌ Network error:", error);
-    alert("❌ Network error: " + error.message);
+  } catch (err) {
+    console.error("❌ Network or execution error:", err);
+    alert("❌ A network or execution error occurred. Check the console.");
   }
 }
-
-
 
     function showEditForm(id, fileName, userName) {
       const form = document.getElementById(`edit-${id}`);
