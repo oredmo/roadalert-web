@@ -1,18 +1,38 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>RoadAlert Upload</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- ✅ Load latest Application Insights SDK (v3) -->
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+      t=l.createElement(r);t.async=1;t.src="https://az416426.vo.msecnd.net/scripts/b/ai.3.min.js";
+      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window,document,"appInsights","script");
+
+    // ✅ Initialize with your connection string or instrumentation key
+    appInsights('config', {
+      connectionString: "InstrumentationKey=4c317b61-5741-4965-a81a-415ce50726fd",
+      enableAutoRouteTracking: true
+    });
+
+    // ✅ Track page load
+    appInsights('trackPageView');
+  </script>
 </head>
+
 <body>
   <nav>
     <a href="index.html">Home</a>
     <a href="explore.html">Explore</a>
-    <a href="user.html?userID=1">My Uploads</a> <!-- Replace 1 with dynamic or test userID -->
-  </nav>  
+    <a href="user.html?userID=1">My Uploads</a>
+  </nav>
+
   <h2>RoadAlert Upload</h2>
+
   <form id="uploadForm">
     <label for="file">Choose File (image or video):</label>
     <input type="file" id="file" name="File" required>
@@ -37,6 +57,7 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const formData = new FormData(form);
       const endpoint = "https://prod-08.northcentralus.logic.azure.com:443/workflows/d324804e45064a91a2aea867f4ad9712/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=VnKo7U8gUkNfexwI9AknaxR_ie3OzvJUb9hwyGFmiUw";
 
@@ -45,36 +66,30 @@
           method: 'POST',
           body: formData
         });
+
         const data = await res.json();
-        response.textContent = "Upload successful! Response ID: " + (data.id || "unknown");
+
+        // ✅ Track upload success
+        appInsights('trackEvent', {
+          name: "UploadSuccess",
+          properties: {
+            fileName: form.fileName.value,
+            userID: form.userID.value
+          }
+        });
+
+        response.textContent = "✅ Upload successful! Response ID: " + (data.id || "unknown");
+
       } catch (err) {
-        response.textContent = "Error: " + err.message;
+        // ❌ Track upload failure
+        appInsights('trackException', {
+          exception: new Error(err.message),
+          properties: { action: "UploadFormSubmit" }
+        });
+
+        response.textContent = "❌ Error: " + err.message;
       }
     });
   </script>
-  <script type="text/javascript">
-    var appInsights = window.appInsights || function (config) {
-      function r(config) { t[config] = function () { var i = arguments; t.queue.push(function () { t[config].apply(t, i) }) } }
-      var t = { config: config }, u = document, e = window, o = "script", s = u.createElement(o), i, f;
-      s.src = config.url || "https://az416426.vo.msecnd.net/scripts/a/ai.0.js";
-      u.getElementsByTagName(o)[0].parentNode.appendChild(s);
-      t.queue = [];
-      for (i = ["Event", "Exception", "Metric", "PageView", "Trace", "Dependency"]; i.length;) r("track" + i.pop());
-      r("setAuthenticatedUserContext");
-      r("clearAuthenticatedUserContext");
-      config.disableExceptionTracking || (i = "onerror", r("_" + i), f = e[i], e[i] = function (config, r, u, e, o) {
-        var s = f && f(config, r, u, e, o);
-        s !== !0 && t["_" + i](config, r, u, e, o);
-        return s;
-      });
-      return t;
-    }({
-      instrumentationKey: "4c317b61-5741-4965-a81a-415ce50726fd"
-    });
-  
-    window.appInsights = appInsights;
-    appInsights.trackPageView();
-  </script>
-  
 </body>
 </html>
